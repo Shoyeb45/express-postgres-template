@@ -1,14 +1,12 @@
-import { Types } from "mongoose";
-
 export enum RoleCode {
-    USER = "user",
-    ADMIN = "admin"
+    USER = "USER",
+    ADMIN = "ADMIN"
 }
 
 export default interface Role {
-    _id: Types.ObjectId;
-    code: string;
-    status?: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
+    id: number;
+    code: RoleCode;
+    status: boolean;
+    createdAt: Date;
+    updatedAt: Date;
 }

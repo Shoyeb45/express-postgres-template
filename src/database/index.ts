@@ -1,57 +1,40 @@
-import mongoose, { Query, Schema } from 'mongoose';
+import { PrismaClient } from '@prisma/client';
 import logger from '../core/logger';
-import { db } from '../config';
+
+let prisma: PrismaClient;
 
 export async function connectDB() {
-    const dbURI = `mongodb+srv://${db.user}:${encodeURIComponent(db.password)}@${
-        db.host
-    }/${db.name}`;
-
-    const options = {
-        autoIndex: true,
-        minPoolSize: db.minPoolSize,
-        maxPoolSize: db.maxPoolSize,
-        connectTimeoutMS: 60000,
-        socketTimeoutMS: 45000,
-    };
-    mongoose.set('strictQuery', true);
-
-    function setRunValidators(this: Query<unknown, unknown>) {
-        this.setOptions({ runValidators: true });
-    }
-
-    mongoose.plugin((schema: Schema) => {
-        schema.pre('findOneAndUpdate', setRunValidators);
-        schema.pre('updateMany', setRunValidators);
-        schema.pre('updateOne', setRunValidators);
-        schema.pre(/^update/, setRunValidators);
-    });
     try {
-        logger.debug(dbURI);
-        await mongoose.connect(dbURI, options);
-        logger.info('Mongoose connection established');
+        prisma = new PrismaClient({
+            log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+        });
+
+        // Test the connection
+        await prisma.$connect();
+        logger.info('Prisma connected to PostgreSQL database');
     } catch (err) {
-        logger.error('Mongoose connection error');
+        logger.error('Prisma connection error');
         logger.error(err);
         process.exit(1);
     }
 
-    mongoose.connection.on('connected', () => {
-        logger.debug(`Mongoose connected to ${dbURI}`);
+    // Handle graceful shutdown
+    process.on('SIGINT', async () => {
+        await prisma.$disconnect();
+        logger.info('Prisma disconnected due to app termination');
+        process.exit(0);
     });
 
-    mongoose.connection.on('error', (err) => {
-        logger.error('Mongoose connection error: ' + err);
+    process.on('SIGTERM', async () => {
+        await prisma.$disconnect();
+        logger.info('Prisma disconnected due to app termination');
+        process.exit(0);
     });
+}
 
-    mongoose.connection.on('disconnected', () => {
-        logger.info('Mongoose disconnected');
-    });
-
-    process.on('SIGINT', () => {
-        mongoose.connection.close().finally(() => {
-            logger.info('Mongoose disconnected due to app termination');
-            process.exit(0);
-        });
-    });
+export function getPrismaClient(): PrismaClient {
+    if (!prisma) {
+        throw new Error('Prisma client not initialized. Call connectDB() first.');
+    }
+    return prisma;
 }

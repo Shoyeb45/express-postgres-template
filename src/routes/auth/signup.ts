@@ -5,12 +5,12 @@ import { asyncHandler } from './../../core/asyncHandler';
 import UserRepo from '../../database/repositories/UserRepo';
 import { BadRequestError } from '../../core/ApiError';
 import crypto from 'crypto';
-import User from './../../types/User';
 import { createTokens } from '../../core/authUtils';
 import { getUserData } from './../../core/utils';
 import { SuccessResponse } from './../../core/ApiResponse';
 import { RoleCode } from './../../types/Role';
 import { ValidationSource } from '../../helpers/validator';
+import bcryptjs from 'bcryptjs';
 
 const router = Router();
 
@@ -21,11 +21,18 @@ router.post(
         const user = await UserRepo.findByEmail(req.body.email);
         if (user) throw new BadRequestError('User already registered.');
 
+        // Hash password
+        const hashedPassword = await bcryptjs.hash(req.body.password, 12);
+
         const accessTokenKey = crypto.randomBytes(64).toString('hex');
         const refreshTokenKey = crypto.randomBytes(64).toString('hex');
 
         const { user: createdUser, keystore } = await UserRepo.create(
-            req.body as User,
+            {
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+            },
             accessTokenKey,
             refreshTokenKey,
             RoleCode.USER,

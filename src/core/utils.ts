@@ -7,6 +7,6 @@ export const enum Header {
 }
 
 export async function getUserData(user: User) {
-    const data = objectManipulator.pick(user, ['_id', 'name', 'roles', 'profilePicUrl', 'email']);
+    const data = objectManipulator.pick(user, ['id', 'name', 'roles', 'email']);
     return data;
 }

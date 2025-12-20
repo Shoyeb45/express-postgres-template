@@ -12,9 +12,13 @@ export const authorize = (...allowedRoles: RoleCode[]): RequestHandler => {
                 throw new ForbiddenError('Authentication required');
             }
 
-            if (!allowedRoles.includes(protectedReq.user.role)) {
+            // Check if user has any of the allowed roles
+            const userRoleCodes = protectedReq.user.roles.map(role => role.code);
+            const hasAllowedRole = allowedRoles.some(role => userRoleCodes.includes(role));
+
+            if (!hasAllowedRole) {
                 throw new ForbiddenError(
-                    `Forbidden: required roles [${allowedRoles.join(', ')}], found: ${protectedReq.user.role}`,
+                    `Forbidden: required roles [${allowedRoles.join(', ')}], found: [${userRoleCodes.join(', ')}]`,
                 );
             }
 

@@ -1,48 +1,91 @@
 import Keystore from '../../types/Keystore';
-import User from '../../types/User';
-import { KeystoreModel } from '../models/Keystore';
-import { Types } from 'mongoose';
+import { getPrismaClient } from '../index';
+import { PrismaClient } from '@prisma/client';
 
 async function create(
-    client: User,
+    clientId: number,
     primaryKey: string,
     secondaryKey: string,
+    prismaClient?: PrismaClient | any,
 ): Promise<Keystore> {
-    const keystore = await KeystoreModel.create({
-        client: client,
-        primaryKey: primaryKey,
-        secondaryKey: secondaryKey,
+    const prisma = prismaClient || getPrismaClient();
+    
+    const keystore = await prisma.keystore.create({
+        data: {
+            clientId,
+            primaryKey,
+            secondaryKey,
+        }
     });
 
-    return keystore.toObject();
+    return {
+        id: keystore.id,
+        clientId: keystore.clientId,
+        primaryKey: keystore.primaryKey,
+        secondaryKey: keystore.secondaryKey,
+        status: keystore.status,
+        createdAt: keystore.createdAt,
+        updatedAt: keystore.updatedAt
+    };
 }
 
-async function remove(id: Types.ObjectId) {
-    return KeystoreModel.findByIdAndDelete(id).lean().exec();
+async function remove(id: number): Promise<void> {
+    const prisma = getPrismaClient();
+    await prisma.keystore.delete({
+        where: { id }
+    });
 }
 
-async function findForKey(client: User, key: string) {
-    return KeystoreModel.findOne({
-        client: client,
-        primaryKey: key,
-        status: true,
-    })
-        .lean()
-        .exec();
+async function findForKey(clientId: number, key: string): Promise<Keystore | null> {
+    const prisma = getPrismaClient();
+    
+    const keystore = await prisma.keystore.findFirst({
+        where: {
+            clientId,
+            primaryKey: key,
+            status: true,
+        }
+    });
+
+    if (!keystore) return null;
+
+    return {
+        id: keystore.id,
+        clientId: keystore.clientId,
+        primaryKey: keystore.primaryKey,
+        secondaryKey: keystore.secondaryKey,
+        status: keystore.status,
+        createdAt: keystore.createdAt,
+        updatedAt: keystore.updatedAt
+    };
 }
 
 async function find(
-    client: User,
+    clientId: number,
     primaryKey: string,
     secondaryKey: string,
 ): Promise<Keystore | null> {
-    return KeystoreModel.findOne({
-        client: client,
-        primaryKey: primaryKey,
-        secondaryKey: secondaryKey,
-    })
-        .lean()
-        .exec();
+    const prisma = getPrismaClient();
+    
+    const keystore = await prisma.keystore.findFirst({
+        where: {
+            clientId,
+            primaryKey,
+            secondaryKey,
+        }
+    });
+
+    if (!keystore) return null;
+
+    return {
+        id: keystore.id,
+        clientId: keystore.clientId,
+        primaryKey: keystore.primaryKey,
+        secondaryKey: keystore.secondaryKey,
+        status: keystore.status,
+        createdAt: keystore.createdAt,
+        updatedAt: keystore.updatedAt
+    };
 }
 
 export default {
