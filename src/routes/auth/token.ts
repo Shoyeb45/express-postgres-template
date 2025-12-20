@@ -9,7 +9,6 @@ import JWT from './../../core/jwtUtils';
 import { validateTokenData, createTokens } from './../../core/authUtils';
 import UserRepo from '../../database/repositories/UserRepo';
 import KeystoreRepo from '../../database/repositories/KeystoreRepo';
-import { Types } from 'mongoose';
 import { AuthFailureError } from '../../core/ApiError';
 import crypto from 'crypto';
 import { TokenRefreshResponse } from '../../core/ApiResponse';
@@ -25,9 +24,10 @@ router.post(
         const accessTokenPayload = await JWT.decode(req.accessToken);
         validateTokenData(accessTokenPayload);
 
-        const user = await UserRepo.findById(
-            new Types.ObjectId(accessTokenPayload.sub),
-        );
+        const userId = parseInt(accessTokenPayload.sub, 10);
+        if (isNaN(userId)) throw new AuthFailureError('Invalid user ID in token');
+
+        const user = await UserRepo.findById(userId);
 
         if (!user) throw new AuthFailureError('User not registered');
         req.user = user;
@@ -39,18 +39,18 @@ router.post(
             throw new AuthFailureError('Invalid access token');
 
         const keystore = await KeystoreRepo.find(
-            req.user,
+            req.user.id,
             accessTokenPayload.prm,
             refreshTokenPayload.prm,
         );
 
         if (!keystore) throw new AuthFailureError('Invalid access token');
-        await KeystoreRepo.remove(keystore._id);
+        await KeystoreRepo.remove(keystore.id);
 
         const accessTokenKey = crypto.randomBytes(64).toString('hex');
         const refreshTokenKey = crypto.randomBytes(64).toString('hex');
 
-        await KeystoreRepo.create(req.user, accessTokenKey, refreshTokenKey);
+        await KeystoreRepo.create(req.user.id, accessTokenKey, refreshTokenKey);
         const tokens = await createTokens(
             req.user,
             accessTokenKey,

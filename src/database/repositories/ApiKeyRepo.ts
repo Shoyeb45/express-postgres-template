@@ -1,9 +1,29 @@
 import { Permission } from '../../types/permissions';
 import ApiKey from '../../types/ApiKey';
-import { ApiKeyModel } from '../models/ApiKeys';
+import { getPrismaClient } from '../index';
 
 async function findByKey(key: string): Promise<ApiKey | null> {
-    return ApiKeyModel.findOne({ key: key, status: true }).lean().exec();
+    const prisma = getPrismaClient();
+    
+    const apiKey = await prisma.apiKey.findFirst({
+        where: { 
+            key,
+            status: true 
+        }
+    });
+
+    if (!apiKey) return null;
+
+    return {
+        id: apiKey.id,
+        key: apiKey.key,
+        version: apiKey.version,
+        permissions: apiKey.permissions as Permission[],
+        comments: apiKey.comments,
+        status: apiKey.status,
+        createdAt: apiKey.createdAt,
+        updatedAt: apiKey.updatedAt
+    };
 }
 
 async function create(
@@ -11,13 +31,28 @@ async function create(
     comments: string[],
     permissions: Permission[],
     version: number = 1,
-) {
-    return ApiKeyModel.create({
-        key,
-        comments,
-        permissions,
-        version,
+): Promise<ApiKey> {
+    const prisma = getPrismaClient();
+    
+    const apiKey = await prisma.apiKey.create({
+        data: {
+            key,
+            comments,
+            permissions: permissions as string[],
+            version,
+        }
     });
+
+    return {
+        id: apiKey.id,
+        key: apiKey.key,
+        version: apiKey.version,
+        permissions: apiKey.permissions as Permission[],
+        comments: apiKey.comments,
+        status: apiKey.status,
+        createdAt: apiKey.createdAt,
+        updatedAt: apiKey.updatedAt
+    };
 }
 
 export default {

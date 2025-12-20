@@ -1,59 +1,188 @@
 import User from "../../types/User";
 import { InternalError } from "../../core/ApiError";
-import { RoleModel } from "../models/Role";
-import { UserModel } from "../models/User";
+import { getPrismaClient } from "../index";
 import KeystoreRepo from "./KeystoreRepo";
-import { Types } from "mongoose";
+import { RoleCode } from "../../types/Role";
 
-async function findByEmail(email: string) {
-    return await UserModel.findOne({ email: email })
-        .select(
-            "+name +email +password +roles"
-        )
-        .populate({
-            path: "roles",
-            match: { status: true },
-            select: { code: 1 }
-        })
-        .lean()
-        .exec();
-}
-
-async function create(
-    user: User,
-    accessTokenKey: string,
-    refreshTokenKey: string,
-    roleCode: string
-) {
-    const role = await RoleModel.findOne({ code: roleCode })
-        .select("+code")
-        .lean()
-        .exec();
-
-    if (!role) throw new InternalError("Role must be defined.");
-
-    user.roles = [role];
-    const userCreated = await UserModel.create(user);
+async function findByEmail(email: string): Promise<User | null> {
+    const prisma = getPrismaClient();
     
-    const keystore = await KeystoreRepo.create(
-        userCreated, accessTokenKey, refreshTokenKey
-    );
+    const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+            roles: {
+                where: {
+                    role: {
+                        status: true
+                    }
+                },
+                include: {
+                    role: {
+                        select: {
+                            id: true,
+                            code: true,
+                            status: true,
+                            createdAt: true,
+                            updatedAt: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!user) return null;
+
     return {
-        user: { ...userCreated.toObject(), roles: user.roles },
-        keystore: keystore
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        roles: user.roles.map((ur: { role: { id: number; code: string; status: boolean; createdAt: Date; updatedAt: Date } }) => ({
+            id: ur.role.id,
+            code: ur.role.code as RoleCode,
+            status: ur.role.status,
+            createdAt: ur.role.createdAt,
+            updatedAt: ur.role.updatedAt
+        })),
+        verified: user.verified,
+        status: user.status,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
     };
 }
 
+async function create(
+    userData: { name: string; email: string; password: string },
+    accessTokenKey: string,
+    refreshTokenKey: string,
+    roleCode: RoleCode
+) {
+    const prisma = getPrismaClient();
 
-async function findById(id: Types.ObjectId) {
-    return await UserModel.findOne({ _id: id, status: true })
-        .select("+email +password +name +roles")
-        .populate({
-            path: "roles",
-            match: { status: true }
-        })
-        .lean()
-        .exec();
+    // Find or get the role
+    const role = await prisma.role.findUnique({
+        where: { code: roleCode }
+    });
+
+    if (!role) throw new InternalError("Role must be defined.");
+
+    // Create user and role relation in a transaction
+    const result = await prisma.$transaction(async (tx: typeof prisma) => {
+        // Create user
+        const user = await tx.user.create({
+            data: {
+                name: userData.name,
+                email: userData.email,
+                password: userData.password,
+            }
+        });
+
+        // Create user-role relation
+        await tx.userRoleRelation.create({
+            data: {
+                userId: user.id,
+                roleId: role.id
+            }
+        });
+
+        // Create keystore
+        const keystoreData = await tx.keystore.create({
+            data: {
+                clientId: user.id,
+                primaryKey: accessTokenKey,
+                secondaryKey: refreshTokenKey,
+            }
+        });
+        
+        const keystore = {
+            id: keystoreData.id,
+            clientId: keystoreData.clientId,
+            primaryKey: keystoreData.primaryKey,
+            secondaryKey: keystoreData.secondaryKey,
+            status: keystoreData.status,
+            createdAt: keystoreData.createdAt,
+            updatedAt: keystoreData.updatedAt
+        };
+
+        // Get user with roles
+        const userWithRoles = await tx.user.findUnique({
+            where: { id: user.id },
+            include: {
+                roles: {
+                    include: {
+                        role: true
+                    }
+                }
+            }
+        });
+
+        return {
+            user: {
+                id: userWithRoles!.id,
+                name: userWithRoles!.name,
+                email: userWithRoles!.email,
+                password: userWithRoles!.password,
+                roles: userWithRoles!.roles.map((ur: { role: { id: number; code: string; status: boolean; createdAt: Date; updatedAt: Date } }) => ({
+                    id: ur.role.id,
+                    code: ur.role.code as RoleCode,
+                    status: ur.role.status,
+                    createdAt: ur.role.createdAt,
+                    updatedAt: ur.role.updatedAt
+                })),
+                verified: userWithRoles!.verified,
+                status: userWithRoles!.status,
+                createdAt: userWithRoles!.createdAt,
+                updatedAt: userWithRoles!.updatedAt
+            },
+            keystore
+        };
+    });
+
+    return result;
+}
+
+async function findById(id: number): Promise<User | null> {
+    const prisma = getPrismaClient();
+    
+    const user = await prisma.user.findFirst({
+        where: { 
+            id,
+            status: true 
+        },
+        include: {
+            roles: {
+                where: {
+                    role: {
+                        status: true
+                    }
+                },
+                include: {
+                    role: true
+                }
+            }
+        }
+    });
+
+    if (!user) return null;
+
+    return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        roles: user.roles.map((ur: { role: { id: number; code: string; status: boolean; createdAt: Date; updatedAt: Date } }) => ({
+            id: ur.role.id,
+            code: ur.role.code as RoleCode,
+            status: ur.role.status,
+            createdAt: ur.role.createdAt,
+            updatedAt: ur.role.updatedAt
+        })),
+        verified: user.verified,
+        status: user.status,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+    };
 }
 
 export default {

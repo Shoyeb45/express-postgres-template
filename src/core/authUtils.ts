@@ -3,7 +3,6 @@ import User from './../types/User';
 import { Tokens } from './../types/app-requests';
 import JWT, { JwtPayload } from './jwtUtils';
 import { tokenInfo } from './../config';
-import { Types } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 
 export const getAccessToken = (authorization?: string) => {
@@ -22,7 +21,7 @@ export const validateTokenData = (payload: JwtPayload): boolean => {
         !payload.prm ||
         payload.iss !== tokenInfo.issuer ||
         payload.aud !== tokenInfo.audience ||
-        !Types.ObjectId.isValid(payload.sub)
+        !/^\d+$/.test(payload.sub) // Validate that sub is a numeric string (user ID)
     )
         throw new AuthFailureError('Invalid Access Token');
     return true;
@@ -37,7 +36,7 @@ export const createTokens = async (
         new JwtPayload(
             tokenInfo.issuer,
             tokenInfo.audience,
-            user._id.toString(),
+            user.id.toString(),
             accessTokenKey,
             tokenInfo.accessTokenValidity,
         ),
@@ -49,7 +48,7 @@ export const createTokens = async (
         new JwtPayload(
             tokenInfo.issuer,
             tokenInfo.audience,
-            user._id.toString(),
+            user.id.toString(),
             refreshTokenKey,
             tokenInfo.refreshTokenValidity,
         ),

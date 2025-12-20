@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import z from 'zod';
 
 export enum ValidationSource {
@@ -8,10 +7,13 @@ export enum ValidationSource {
     PARAM = 'params',
 }
 
-export const ZodObjectId = z
+export const ZodUserId = z
     .string()
-    .refine((value: string) => mongoose.Types.ObjectId.isValid(value), {
-        message: 'Invalid mongoDB object Id.',
+    .refine((value: string) => {
+        const num = parseInt(value, 10);
+        return !isNaN(num) && num > 0;
+    }, {
+        message: 'Invalid user ID. Must be a positive integer.',
     });
 
 export const ZodUrlEndpoint = z

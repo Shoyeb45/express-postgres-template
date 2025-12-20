@@ -9,7 +9,6 @@ import { TokenExpiredError } from 'jsonwebtoken';
 import { AccessTokenError, AuthFailureError } from '../../core/ApiError';
 import jwtUtils from '../../core/jwtUtils';
 import UserRepo from '../../database/repositories/UserRepo';
-import { Types } from 'mongoose';
 import KeystoreRepo from '../../database/repositories/KeystoreRepo';
 const router = Router();
 
@@ -22,14 +21,15 @@ export default router.use(
             const payload = await jwtUtils.validate(req.accessToken);
             validateTokenData(payload);
 
-            const user = await UserRepo.findById(
-                new Types.ObjectId(payload.sub),
-            );
+            const userId = parseInt(payload.sub, 10);
+            if (isNaN(userId)) throw new AuthFailureError('Invalid user ID in token');
+
+            const user = await UserRepo.findById(userId);
             if (!user) throw new AuthFailureError('User not registered.');
             req.user = user;
 
             const keystore = await KeystoreRepo.findForKey(
-                req.user,
+                req.user.id,
                 payload.prm,
             );
             if (!keystore) throw new AuthFailureError('Invalid access token.');
