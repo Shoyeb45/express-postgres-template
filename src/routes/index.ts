@@ -3,8 +3,8 @@ import { Router, RequestHandler } from 'express';
 import healthRoutes from "./health/index.js";
 import { apiKeyMiddleware } from './auth/apiKey.js';
 import permission  from '../middlewares/permission.middleware.js';
-import { Permission } from './../types/permissions';
 import authRoutes from "./auth";
+import { Permission } from '@prisma/client';
 
 const router = Router();
 

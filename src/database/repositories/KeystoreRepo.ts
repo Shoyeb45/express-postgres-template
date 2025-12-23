@@ -1,14 +1,12 @@
-import Keystore from '../../types/Keystore';
+import { Keystore } from '@prisma/client';
 import { getPrismaClient } from '../index';
-import { PrismaClient } from '@prisma/client';
 
 async function create(
     clientId: number,
     primaryKey: string,
     secondaryKey: string,
-    prismaClient?: PrismaClient | any,
 ): Promise<Keystore> {
-    const prisma = prismaClient || getPrismaClient();
+    const prisma =  getPrismaClient();
     
     const keystore = await prisma.keystore.create({
         data: {

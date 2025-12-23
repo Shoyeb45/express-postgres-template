@@ -1,15 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url = env("DATABASE_URL")
 }
 
 // User Table
@@ -24,7 +19,7 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  roles UserRoleRelation[]
+  roles     UserRoleRelation[]
   keystores Keystore[]
 
   @@index([email])
@@ -47,7 +42,6 @@ model UserRoleRelation {
   @@index([roleId])
 }
 
-
 model Role {
   id     Int      @id @default(autoincrement())
   code   RoleCode @unique
@@ -68,11 +62,11 @@ enum RoleCode {
 
 // Keystore Table for JWT token management
 model Keystore {
-  id          Int      @id @default(autoincrement())
-  clientId    Int      @map("client_id")
-  primaryKey  String   @map("primary_key")
+  id           Int     @id @default(autoincrement())
+  clientId     Int     @map("client_id")
+  primaryKey   String  @map("primary_key")
   secondaryKey String  @map("secondary_key")
-  status      Boolean  @default(true)
+  status       Boolean @default(true)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
@@ -87,16 +81,20 @@ model Keystore {
 
 // ApiKey Table for API key management
 model ApiKey {
-  id         Int        @id @default(autoincrement())
-  key        String     @unique
-  version    Int        @default(1)
-  permissions String[]  // Array of permission strings
-  comments   String[]   // Array of comment strings
-  status     Boolean    @default(true)
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  version     Int      @default(1)
+  permissions Permission[] // Array of permission strings
+  comments    String[] // Array of comment strings
+  status      Boolean  @default(true)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@index([key, status])
   @@map("api_keys")
+}
+
+enum Permission {
+  GENERAL
 }

@@ -8,9 +8,9 @@ import crypto from 'crypto';
 import { createTokens } from '../../core/authUtils';
 import { getUserData } from './../../core/utils';
 import { SuccessResponse } from './../../core/ApiResponse';
-import { RoleCode } from './../../types/Role';
 import { ValidationSource } from '../../helpers/validator';
 import bcryptjs from 'bcryptjs';
+import { RoleCode } from '@prisma/client';
 
 const router = Router();
 

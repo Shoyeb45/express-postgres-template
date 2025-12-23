@@ -1,13 +1,9 @@
-import Role from "./Role.js";
+import { RoleCode, User } from "@prisma/client";
 
-export default interface User {
-    id: number;
-    name: string;
-    email: string;
-    password: string;
-    roles: Role[];
-    verified: boolean;
-    status: boolean;
-    createdAt: Date;
-    updatedAt: Date;
+export interface AuthUser extends User {
+    roles: {
+        id: number,
+        code: RoleCode,
+        status: boolean
+    }[]
 }

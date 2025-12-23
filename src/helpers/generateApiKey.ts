@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import ApiKeyRepo from '../database/repositories/ApiKeyRepo';
-import { Permission } from '../types/permissions';
 import { connectDB } from '../database';
+import { Permission } from '@prisma/client';
 
 export async function createApiKey(
     comments: string[],

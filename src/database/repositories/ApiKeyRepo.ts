@@ -1,5 +1,4 @@
-import { Permission } from '../../types/permissions';
-import ApiKey from '../../types/ApiKey';
+import { ApiKey, Permission } from '@prisma/client';
 import { getPrismaClient } from '../index';
 
 async function findByKey(key: string): Promise<ApiKey | null> {
@@ -38,7 +37,7 @@ async function create(
         data: {
             key,
             comments,
-            permissions: permissions as string[],
+            permissions: permissions,
             version,
         }
     });

@@ -1,13 +1,14 @@
-import { PrismaClient } from '@prisma/client';
 import logger from '../core/logger';
+import { dbUrl } from '../config';
+import { PrismaClient } from '@prisma/client';
 
 let prisma: PrismaClient;
+console.log(dbUrl);
 
 export async function connectDB() {
     try {
-        prisma = new PrismaClient({
-            log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-        });
+        
+        prisma = new PrismaClient();
 
         // Test the connection
         await prisma.$connect();

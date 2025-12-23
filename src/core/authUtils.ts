@@ -1,9 +1,9 @@
 import { AuthFailureError, InternalError } from './ApiError';
-import User from './../types/User';
 import { Tokens } from './../types/app-requests';
 import JWT, { JwtPayload } from './jwtUtils';
 import { tokenInfo } from './../config';
 import bcryptjs from 'bcryptjs';
+import { User } from '@prisma/client';
 
 export const getAccessToken = (authorization?: string) => {
     if (!authorization) throw new AuthFailureError('Invalid Authorization');

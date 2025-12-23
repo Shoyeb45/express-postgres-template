@@ -19,3 +19,5 @@ export const tokenInfo = {
 
 
 export const logDirectory = process.env.LOG_DIRECTORY;
+
+export const dbUrl = process.env.DATABASE_URL ?? "";

@@ -1,4 +1,4 @@
-import User from "./../types/User";
+import { AuthUser } from "./../types/user";
 import objectManipulator from "lodash";
 
 export const enum Header {
@@ -6,7 +6,7 @@ export const enum Header {
     AUTHORIZATION = 'authorization',
 }
 
-export async function getUserData(user: User) {
+export async function getUserData(user: AuthUser) {
     const data = objectManipulator.pick(user, ['id', 'name', 'roles', 'email']);
     return data;
 }

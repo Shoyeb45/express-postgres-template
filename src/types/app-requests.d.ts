@@ -1,7 +1,7 @@
 import { Request } from 'express';
-import User from './User';
-import Keystore from './Keystore';
-import ApiKey from './ApiKey';
+import { ApiKey, Keystore } from '@prisma/client';
+import { AuthUser } from './user';
+
 declare interface PublicRequest extends Request {
     apiKey: ApiKey;
 }
@@ -11,7 +11,7 @@ declare interface RoleRequest extends PublicRequest {
 }
 
 declare interface ProtectedRequest extends RoleRequest {
-    user: User;
+    user: AuthUser;
     accessToken: string;
     keystore: Keystore;
 }
@@ -20,3 +20,4 @@ declare interface Tokens {
     accessToken: string;
     refreshToken: string;
 }
+
