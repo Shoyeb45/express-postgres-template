@@ -1,9 +1,7 @@
 import logger from '../core/logger';
-import { dbUrl } from '../config';
 import { PrismaClient } from '@prisma/client';
 
 let prisma: PrismaClient;
-console.log(dbUrl);
 
 export async function connectDB() {
     try {

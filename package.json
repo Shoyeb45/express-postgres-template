@@ -6,7 +6,7 @@
   "scripts": {
     "lint:fix": "eslint . --fix",
     "build": "npx tsc -b",
-    "dev": "npm run build && node dist/index.js",
+    "dev": "nodemon",
     "start": "npm run build && npm run serve",
     "serve": "node -r dotenv/config dist/index.js",
     "test": "jest",
@@ -51,6 +51,7 @@
     "globals": "^16.5.0",
     "jest": "^30.2.0",
     "jiti": "^2.5.1",
+    "nodemon": "^3.1.11",
     "prettier": "^3.7.3",
     "prisma": "^6.13.0",
     "ts-node": "^10.9.2",
