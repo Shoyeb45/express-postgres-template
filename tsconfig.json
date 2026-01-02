@@ -24,10 +24,6 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    ".templates"
-  ]
+  "include": ["src/**/*"],
+  "exclude": [".templates"]
 }

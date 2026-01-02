@@ -9,3 +9,4 @@ dist/*
 dist
 logs
 ./keys/*.pem
+.early.coverage
