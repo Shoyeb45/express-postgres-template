@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { isProduction } from "../config.js";
+import { isProduction } from "../config";
 import {
   AuthFailureResponse,
   AccessTokenErrorResponse,
@@ -35,25 +35,25 @@ export abstract class ApiError extends Error {
       case ErrorType.BAD_TOKEN:
       case ErrorType.TOKEN_EXPIRED:
       case ErrorType.UNAUTHORIZED:
-        return new AuthFailureResponse(err.message).send(res);
+        return new AuthFailureResponse(err.message, false).send(res);
       case ErrorType.ACCESS_TOKEN:
-        return new AccessTokenErrorResponse(err.message).send(res);
+        return new AccessTokenErrorResponse(err.message, false).send(res);
       case ErrorType.INTERNAL:
-        return new InternalErrorResponse(err.message).send(res);
+        return new InternalErrorResponse(err.message, false).send(res);
       case ErrorType.NOT_FOUND:
       case ErrorType.NO_ENTRY:
       case ErrorType.NO_DATA:
-        return new NotFoundResponse(err.message).send(res);
+        return new NotFoundResponse(err.message, false).send(res);
       case ErrorType.BAD_REQUEST:
-        return new BadRequestResponse(err.message).send(res);
+        return new BadRequestResponse(err.message, false).send(res);
       case ErrorType.FORBIDDEN:
-        return new ForbiddenResponse(err.message).send(res);
+        return new ForbiddenResponse(err.message, false).send(res);
       default: {
         let message = err.message;
         if (isProduction) {
           message = "Something wrong happened.";
         }
-        return new InternalErrorResponse(message).send(res);
+        return new InternalErrorResponse(message, false).send(res);
       }
     }
   }

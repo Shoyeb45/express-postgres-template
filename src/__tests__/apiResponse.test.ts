@@ -1,11 +1,9 @@
 import {
   NotFoundResponse,
   AccessTokenErrorResponse,
-  SuccessResponse,
 } from "../core/ApiResponse";
 import {
   NotFoundError,
-  AuthFailureError,
   InternalError,
   ApiError,
 } from "../core/ApiError";

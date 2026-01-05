@@ -22,6 +22,7 @@ abstract class ApiResponse {
         protected statusCode: StatusCode,
         protected status: ResponseStatus,
         protected message: string,
+        protected success: boolean
     ) { }
 
     protected prepare<T extends ApiResponse>(
@@ -51,14 +52,14 @@ abstract class ApiResponse {
 }
 
 export class AuthFailureResponse extends ApiResponse {
-    constructor(message = 'Authentication Failure') {
-        super(StatusCode.FAILURE, ResponseStatus.UNAUTHORIZED, message);
+    constructor(message = 'Authentication Failure', success: boolean = true) {
+        super(StatusCode.FAILURE, ResponseStatus.UNAUTHORIZED, message, success);
     }
 }
 
 export class NotFoundResponse extends ApiResponse {
-    constructor(message = 'Not Found') {
-        super(StatusCode.FAILURE, ResponseStatus.NOT_FOUND, message);
+    constructor(message = 'Not Found', success: boolean = true) {
+        super(StatusCode.FAILURE, ResponseStatus.NOT_FOUND, message, success);
     }
 
     send(res: Response, headers: { [key: string]: string } = {}): Response {
@@ -67,38 +68,38 @@ export class NotFoundResponse extends ApiResponse {
 }
 
 export class ForbiddenResponse extends ApiResponse {
-    constructor(message = 'Forbidden') {
-        super(StatusCode.FAILURE, ResponseStatus.FORBIDDEN, message);
+    constructor(message = 'Forbidden', success: boolean = true) {
+        super(StatusCode.FAILURE, ResponseStatus.FORBIDDEN, message, success);
     }
 }
 
 export class BadRequestResponse extends ApiResponse {
-    constructor(message = 'Bad Parameters') {
-        super(StatusCode.FAILURE, ResponseStatus.BAD_REQUEST, message);
+    constructor(message = 'Bad Parameters', success: boolean = true) {
+        super(StatusCode.FAILURE, ResponseStatus.BAD_REQUEST, message, success);
     }
 }
 
 export class InternalErrorResponse extends ApiResponse {
-    constructor(message = 'Internal Error') {
-        super(StatusCode.FAILURE, ResponseStatus.INTERNAL_ERROR, message);
+    constructor(message = 'Internal Error', success: boolean = true) {
+        super(StatusCode.FAILURE, ResponseStatus.INTERNAL_ERROR, message, success);
     }
 }
 
 export class SuccessMsgResponse extends ApiResponse {
-    constructor(message: string) {
-        super(StatusCode.SUCCESS, ResponseStatus.SUCCESS, message);
+    constructor(message: string, success: boolean = true) {
+        super(StatusCode.SUCCESS, ResponseStatus.SUCCESS, message, success);
     }
 }
 
 export class FailureMsgResponse extends ApiResponse {
-    constructor(message: string) {
-        super(StatusCode.FAILURE, ResponseStatus.SUCCESS, message);
+    constructor(message: string, success: boolean = true) {
+        super(StatusCode.FAILURE, ResponseStatus.SUCCESS, message, success);
     }
 }
 
 export class SuccessResponse<T> extends ApiResponse {
-    constructor(message: string, private data: T) {
-        super(StatusCode.SUCCESS, ResponseStatus.SUCCESS, message);
+    constructor(message: string, private data: T, success: boolean = true) {
+        super(StatusCode.SUCCESS, ResponseStatus.SUCCESS, message, success);
     }
 
     send(res: Response, headers: { [key: string]: string } = {}): Response {
@@ -109,11 +110,12 @@ export class SuccessResponse<T> extends ApiResponse {
 export class AccessTokenErrorResponse extends ApiResponse {
     private instruction = 'refresh_token';
 
-    constructor(message = 'Access token invalid') {
+    constructor(message = 'Access token invalid', success: boolean = true) {
         super(
             StatusCode.INVALID_ACCESS_TOKEN,
             ResponseStatus.UNAUTHORIZED,
             message,
+            success
         );
     }
 
@@ -128,8 +130,9 @@ export class TokenRefreshResponse extends ApiResponse {
         message: string,
         private accessToken: string,
         private refreshToken: string,
+        success: boolean = true
     ) {
-        super(StatusCode.SUCCESS, ResponseStatus.SUCCESS, message);
+        super(StatusCode.SUCCESS, ResponseStatus.SUCCESS, message, success);
     }
 
     send(res: Response, headers: { [key: string]: string } = {}): Response {

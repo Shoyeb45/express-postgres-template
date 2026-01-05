@@ -1,8 +1,7 @@
-import path from 'path';
-import { readFile } from 'fs';
 import { promisify } from 'util';
 import { sign, verify, TokenExpiredError as JwtTokenExpiredError } from 'jsonwebtoken';
 import { InternalError, BadTokenError, TokenExpiredError } from './ApiError';
+import { tokenInfo } from '../config';
 
 /*
  * issuer — Software organization who issues the token.
@@ -37,17 +36,11 @@ export class JwtPayload {
 }
 
 async function readPublicKey(): Promise<string> {
-    return promisify(readFile)(
-        path.join(__dirname, '../../keys/public.pem'),
-        'utf8',
-    );
+    return tokenInfo.jwtPublicKey;
 }
 
 async function readPrivateKey(): Promise<string> {
-    return promisify(readFile)(
-        path.join(__dirname, '../../keys/private.pem'),
-        'utf8',
-    );
+    return tokenInfo.jwtPrivateKey;
 }
 
 async function encode(payload: JwtPayload): Promise<string> {
