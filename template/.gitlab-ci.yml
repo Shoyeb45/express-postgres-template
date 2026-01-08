@@ -1,0 +1,44 @@
+# here you can add more stages
+stages:
+  - lint
+  - test
+
+# Lint checking
+lint:
+  stage: lint
+  image: node:24
+
+  cache:
+    key: npm-cache
+    paths:
+      - node_modules/
+
+  rules:
+    # Run only for merge requests targeting main or develop
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" &&
+           ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" ||
+            $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop")'
+
+  script:
+    - npm ci
+    - npm run lint
+
+# Runnnig unit tests
+lint:
+  stage: lint
+  image: node:24
+
+  cache:
+    key: npm-cache
+    paths:
+      - node_modules/
+
+  rules:
+    # Run only for merge requests targeting main or develop
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" &&
+           ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" ||
+            $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop")'
+
+  script:
+    - npm ci
+    - npm run test
