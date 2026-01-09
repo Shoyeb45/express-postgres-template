@@ -38,9 +38,26 @@ const signin = z.object({
     password: z.string().min(6),
 });
 
-const refreshToken = z.object({
-    refreshToken: z.string().min(1),
-});
+const refreshToken = z
+    .object({
+        body: z
+            .object({
+                refreshToken: z.string().min(1).optional(),
+            })
+            .optional(),
+        cookies: z
+            .object({
+                refreshToken: z.string().min(1).optional(),
+            })
+            .optional(),
+    })
+    .refine(
+        (data) =>
+            Boolean(data.body?.refreshToken || data.cookies?.refreshToken),
+        {
+            message: 'Refresh token is required either in body or in cookies.',
+        },
+    );
 
 export default {
     apiKey,

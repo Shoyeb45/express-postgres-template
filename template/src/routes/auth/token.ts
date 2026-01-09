@@ -4,7 +4,7 @@ import schema from './schema';
 import { ValidationSource } from '../../helpers/validator';
 import { asyncHandler } from '../../core/asyncHandler';
 import { ProtectedRequest } from '../../types/app-requests';
-import { getAccessToken } from '../../core/authUtils';
+import { getAccessToken, getRefreshToken } from '../../core/authUtils';
 import JWT from './../../core/jwtUtils';
 import { validateTokenData, createTokens } from './../../core/authUtils';
 import UserRepo from '../../database/repositories/UserRepo';
@@ -16,8 +16,8 @@ const router = Router();
 
 router.post(
     '/refresh',
-    validator(schema.auth, ValidationSource.HEADER),
-    validator(schema.refreshToken, ValidationSource.BODY),
+    validator(schema.auth, ValidationSource.REQUEST),
+    validator(schema.refreshToken, ValidationSource.REQUEST),
     asyncHandler(async (req: ProtectedRequest, res) => {
         req.accessToken = getAccessToken(req);
 
@@ -32,7 +32,10 @@ router.post(
         if (!user) throw new AuthFailureError('User not registered');
         req.user = user;
 
-        const refreshTokenPayload = await JWT.validate(req.body.refreshToken);
+        // get refresh token either from body for mobile or from cookies for web
+        const refreshToken = getRefreshToken(req);
+
+        const refreshTokenPayload = await JWT.validate(refreshToken);
         validateTokenData(refreshTokenPayload);
 
         if (accessTokenPayload.sub !== refreshTokenPayload.sub)

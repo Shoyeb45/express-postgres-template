@@ -19,6 +19,16 @@ export const getAccessToken = (req: ProtectedRequest) => {
     throw new AuthFailureError('Access token missing');
 };
 
+export const getRefreshToken = (req: ProtectedRequest) => {
+    if (req.body?.refreshToken) {
+        return req.body.refreshToken;
+    }
+    
+    if (req.cookies?.refreshToken) {
+        return req.cookies.refreshToken;
+    }
+    throw new AuthFailureError('Refresh Token is missing.');
+}
 export const validateTokenData = (payload: JwtPayload): boolean => {
     if (
         !payload ||
