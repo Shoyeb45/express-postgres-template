@@ -4,7 +4,7 @@
   "description": "Scaffold an Express backend with postgresh(prisma).",
   "main": "index.js",
   "bin": {
-    "create-express-postgres": "./bin/index.js"
+    "create-express-postgres": "bin/index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,6 +18,11 @@
     "backend",
     "cli",
     "scaffold"
+  ],
+  "files": [
+    "bin",
+    "template",
+    "README.md"
   ],
   "author": "",
   "license": "MIT",
