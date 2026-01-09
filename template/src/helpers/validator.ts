@@ -5,6 +5,12 @@ export enum ValidationSource {
     HEADER = 'headers',
     QUERY = 'query',
     PARAM = 'params',
+    REQUEST = 'request'
+}
+
+export enum CookieKeys {
+    ACCESS_TOKEN = 'accessToken',
+    REFRESH_TOKEN = 'refreshToken'
 }
 
 export const ZodUserId = z
@@ -38,3 +44,8 @@ export const ZodAuthBearer = z.string().refine(
         message: "Invalid Authorization header. Expected: 'Bearer <token>'",
     },
 );
+
+export const ZodCookies = z.object({
+    accessToken: z.string().optional(),
+    refreshToken: z.string().optional()
+});

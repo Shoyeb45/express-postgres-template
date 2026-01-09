@@ -11,6 +11,7 @@ import { createTokens, isPasswordCorrect } from '../../core/authUtils';
 import { getUserData } from '../../core/utils';
 import { SuccessResponse } from '../../core/ApiResponse';
 import { ValidationSource } from '../../helpers/validator';
+import { setCookies } from '../../core/cookieUtils';
 
 const router = Router();
 
@@ -36,6 +37,9 @@ router.post(
             refreshTokenKey,
         );
         const userData = getUserData(user);
+        
+        // Set cookie for browser 
+        setCookies(res, tokens);
 
         new SuccessResponse('Login success.', {
             user: userData,

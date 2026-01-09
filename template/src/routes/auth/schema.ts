@@ -1,14 +1,31 @@
 import { Header } from './../../core/utils';
-import { ZodAuthBearer } from './../../helpers/validator';
+import { ZodAuthBearer, ZodCookies } from './../../helpers/validator';
 import z from 'zod';
 
 const apiKey = z.object({
     [Header.API_KEY]: z.string(),
 });
 
-const auth = z.object({
-    authorization: ZodAuthBearer,
-});
+const auth = z
+    .object({
+        headers: z.object({
+            authorization: ZodAuthBearer.optional(),
+        }),
+        cookies: ZodCookies.optional(),
+    })
+    .refine(
+        (data) => {
+            return (
+                Boolean(data.headers.authorization) ||
+                Boolean(data.cookies?.accessToken)
+            );
+        },
+        {
+            message:
+                'Token is required either in Authorization header or in cookies',
+            // path: ['headers', 'authorization'],
+        },
+    );
 
 const signup = z.object({
     name: z.string().min(3),
@@ -22,7 +39,7 @@ const signin = z.object({
 });
 
 const refreshToken = z.object({
-    refreshToken: z.string().min(1)
+    refreshToken: z.string().min(1),
 });
 
 export default {
@@ -30,5 +47,5 @@ export default {
     auth,
     signup,
     signin,
-    refreshToken
+    refreshToken,
 };

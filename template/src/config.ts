@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { CookieOptions } from 'express';
 
 dotenv.config();
 
@@ -19,6 +20,18 @@ export const tokenInfo = {
     jwtPublicKey: process.env.JWT_PUBLIC_KEY || ''
 };
 
+// Cookie options
+const cookieMaxAgeSeconds = Number(process.env.COOKIE_MAX_AGE_SEC ?? 3600000);
+const cookieDomain = process.env.COOKIE_DOMAIN;
+
+export const cookieOptions: CookieOptions = {
+    httpOnly: true,
+    secure: isProduction, 
+    sameSite: isProduction ? 'none' as const : 'strict' as const,
+    maxAge: cookieMaxAgeSeconds,
+    domain: isProduction ? cookieDomain : undefined,
+    path: '/'
+}
 
 export const logDirectory = process.env.LOG_DIRECTORY;
 

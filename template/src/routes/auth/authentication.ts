@@ -13,9 +13,9 @@ import KeystoreRepo from '../../database/repositories/KeystoreRepo';
 const router = Router();
 
 export default router.use(
-    validator(schema.auth, ValidationSource.HEADER),
+    validator(schema.auth, ValidationSource.REQUEST),
     asyncHandler(async (req: ProtectedRequest, _res, next) => {
-        req.accessToken = getAccessToken(req.headers.authorization);
+        req.accessToken = getAccessToken(req);
 
         try {
             const payload = await jwtUtils.validate(req.accessToken);

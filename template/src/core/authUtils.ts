@@ -1,15 +1,22 @@
 import { AuthFailureError, InternalError } from './ApiError';
-import { Tokens } from './../types/app-requests';
+import { ProtectedRequest, Tokens } from './../types/app-requests';
 import JWT, { JwtPayload } from './jwtUtils';
 import { tokenInfo } from './../config';
 import bcryptjs from 'bcryptjs';
 import { User } from '@prisma/client';
 
-export const getAccessToken = (authorization?: string) => {
-    if (!authorization) throw new AuthFailureError('Invalid Authorization');
-    if (!authorization.startsWith('Bearer '))
-        throw new AuthFailureError('Invalid Authorization');
-    return authorization.split(' ')[1];
+export const getAccessToken = (req: ProtectedRequest) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+        return authHeader.split(' ')[1];
+    }
+
+    const cookieToken: string | undefined = req.cookies?.accessToken;
+    if (cookieToken && cookieToken.trim().length > 0) {
+        return cookieToken;
+    }
+
+    throw new AuthFailureError('Access token missing');
 };
 
 export const validateTokenData = (payload: JwtPayload): boolean => {

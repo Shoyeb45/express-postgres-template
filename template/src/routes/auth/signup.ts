@@ -11,6 +11,7 @@ import { SuccessResponse } from './../../core/ApiResponse';
 import { ValidationSource } from '../../helpers/validator';
 import bcryptjs from 'bcryptjs';
 import { RoleCode } from '@prisma/client';
+import { setCookies } from '../../core/cookieUtils';
 
 const router = Router();
 
@@ -45,6 +46,9 @@ router.post(
         );
 
         const userData = getUserData(createdUser);
+        
+        // Set cookie for browser 
+        setCookies(res, tokens);
 
         new SuccessResponse('Signup successful.', {
             user: userData,

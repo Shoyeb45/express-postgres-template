@@ -19,7 +19,7 @@ router.post(
     validator(schema.auth, ValidationSource.HEADER),
     validator(schema.refreshToken, ValidationSource.BODY),
     asyncHandler(async (req: ProtectedRequest, res) => {
-        req.accessToken = getAccessToken(req.headers?.authorization);
+        req.accessToken = getAccessToken(req);
 
         const accessTokenPayload = await JWT.decode(req.accessToken);
         validateTokenData(accessTokenPayload);
