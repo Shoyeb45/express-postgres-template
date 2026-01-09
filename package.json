@@ -1,6 +1,6 @@
 {
   "name": "create-express-postgres",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Scaffold an Express backend with postgresh(prisma).",
   "main": "index.js",
   "bin": {
